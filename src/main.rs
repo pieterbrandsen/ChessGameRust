@@ -1,11 +1,7 @@
-use std::io; // Import the io module
+mod events {
+    pub mod on_line_read; // Import the on_line_read module from the events folder
+}
 
 fn main() {
-    println!("Guess the number!");
-    println!("Please input your guess.");
-    let mut guess: String = String::new();
-    io::stdin()
-        .read_line(&mut guess)
-        .expect("Failed to read line"); // Fix the method call syntax
-    println!("You guessed: {}", guess);
+    events::on_line_read::read_input(); // Call the guess_number function from the on_line_read module
 }
