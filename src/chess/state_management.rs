@@ -103,7 +103,7 @@ impl GameState {
                 has_moved: false,
             },
             Piece {
-                position: Position { x: 4, y: 6 },
+                position: Position { x: 4, y: 1 },
                 piece_type: PieceType::King,
                 side: Side::White,
                 has_moved: false,
@@ -380,7 +380,7 @@ impl GameState {
                         }
                     }
                 }
-                false
+                true
             }
             PieceType::Bishop => {
                 if x_moved_abs == 0 || y_moved_abs == 0 {
@@ -396,7 +396,7 @@ impl GameState {
                         return false;
                     }
                 }
-                false
+                true
             }
             PieceType::Knight => {
                 if (x_moved_abs == 2 && y_moved_abs == 1) || (x_moved_abs == 1 && y_moved_abs == 2)
@@ -419,7 +419,7 @@ impl GameState {
                         return false;
                     }
                 }
-                false
+                true
             }
             PieceType::Pawn => {
                 if y_moved_abs > 2 {
@@ -511,10 +511,6 @@ impl GameState {
                 continue;
             }
             if self.validate_move(piece.clone(), king_x, king_y) {
-                println!(
-                    "{} of {} can move to {}/{}",
-                    piece.piece_type, piece.side, king_x, king_y
-                );
                 return true;
             }
         }
@@ -533,7 +529,7 @@ impl GameState {
         let king_y = king.position.y;
 
         // Check if the king is in check
-        if self.is_in_check(king_x, king_y, side) {
+        if self.is_in_check(king_x, king_y, side.clone()) {
             // Check if the king has any legal moves to escape check
             for i in -1..=1 {
                 for j in -1..=1 {
@@ -548,7 +544,9 @@ impl GameState {
                     // Check if the king can move to the new position legally
                     if self.validate_move(king.clone(), new_x, new_y) {
                         // If there's a legal move, it's not checkmate
-                        return false;
+                        if self.is_in_check(new_x, new_y, side.clone()) == false {
+                            return false;
+                        }
                     }
                 }
             }
@@ -561,14 +559,18 @@ impl GameState {
     }
 
     pub fn print_chessboard(&self) {
+        // clear the console
+        print!("\x1B[2J\x1B[1;1H");
         let mut board = vec![];
+        board.push("  | a  | b  | c  | d  | e  | f  | g  | h  |".to_string());
+        board.push("--|---------------------------------------|".to_string());
         for i in 1..9 {
-            let mut row = vec![];
+            let mut row = format!("{} |", i);
             for j in 1..9 {
                 if self.pos_has_piece(j, i) {
                     let piece = self.get_piece(j, i);
-                    row.push(format!(
-                        "{}{}",
+                    row += &format!(
+                        " {}{} |",
                         match piece.side {
                             Side::White => "w",
                             Side::Black => "b",
@@ -581,15 +583,16 @@ impl GameState {
                             PieceType::Rook => "R",
                             PieceType::Pawn => "P",
                         }
-                    ));
+                    );
                 } else {
-                    row.push("  ".to_string());
+                    row += "    |";
                 }
             }
             board.push(row);
         }
         for row in board.iter().rev() {
-            println!("{:?}", row);
+            // print row raw without ""
+            println!("{}", row);
         }
     }
 }
